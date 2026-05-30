@@ -1,6 +1,6 @@
 # Edge EEG Workload Classification
 
-[![DOI](https://zenodo.org/badge/1253915064.svg)](https://doi.org/10.5281/zenodo.20452989)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20452989.svg)](https://doi.org/10.5281/zenodo.20452989)
 
 This repository contains the embedded validation artefacts for the conference paper **Edge EEG Workload Classification**.
 
