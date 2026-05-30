@@ -16,6 +16,8 @@ The replicated benchmark target uses within-participant, row-level stratified ho
 
 In the exported 476-row held-out set, 405 held-out windows had an adjacent overlapping segment in the training set. The reported 0.7115 mean split balanced accuracy and 0.7004 mean split macro-F1 should therefore be interpreted as benchmark-replication and embedded-parity targets, not leakage-free trial-level generalization estimates.
 
+A post-hoc grouped trial/block sensitivity summary is included at `embedded/paper_validation/grouped_trial_sensitivity_summary.json`. In that analysis, mean split balanced accuracy was 0.6034 and mean split macro-F1 was 0.5554. This lower result is consistent with the leakage caveat and is not an ESP32 replay result.
+
 ## Full Held-Out Embedded Parity Result
 
 The 476-window block replay is the full held-out embedded parity result:
@@ -35,4 +37,3 @@ It is not used as the full held-out accuracy claim.
 ## Future Work
 
 Future work should evaluate grouped trial/block splits, live STM32/ADS1299 acquisition, power and energy per inference, higher continuous replay loads, possible STM32 CMSIS-DSP feature extraction, and multimodal extension to fNIRS and other signals.
-

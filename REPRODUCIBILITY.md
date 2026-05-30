@@ -48,7 +48,7 @@ python -m platformio run -t upload
 cd ..\..\..
 ```
 
-If the derived replay block file is available, run:
+If the derived replay block file `embedded/window_replay/data/window_replay_blocks.bin` is available, run:
 
 ```powershell
 python embedded\window_replay\block_window_replay.py --port COM6 --out embedded\paper_validation\raw_logs\esp32_window_block_476_full_chunked.csv
@@ -56,6 +56,29 @@ python embedded\window_replay\compare_block_window_replay.py --log embedded\pape
 ```
 
 The paper result was captured in reset-bounded block-transfer chunks. Chunking affected only serial transport capture; the firmware, model, packet format, input windows and predictions were unchanged.
+
+Representative chunk commands used during validation:
+
+```powershell
+python embedded\window_replay\block_window_replay.py --port COM6 --start 0 --limit 50 --out embedded\window_replay\logs\block_476_chunks\block_000_049.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 50 --limit 50 --out embedded\window_replay\logs\block_476_chunks\block_050_099.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 100 --limit 50 --out embedded\window_replay\logs\block_476_chunks\block_100_149.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 150 --limit 50 --out embedded\window_replay\logs\block_476_chunks\block_150_199.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 200 --limit 50 --out embedded\window_replay\logs\block_476_chunks\block_200_249.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 250 --limit 50 --out embedded\window_replay\logs\block_476_chunks\block_250_299.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 300 --limit 50 --out embedded\window_replay\logs\block_476_chunks\block_300_349.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 350 --limit 25 --out embedded\window_replay\logs\block_476_chunks\block_350_374.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 375 --limit 25 --out embedded\window_replay\logs\block_476_chunks\block_375_399.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 400 --limit 25 --out embedded\window_replay\logs\block_476_chunks\block_400_424.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 425 --limit 25 --out embedded\window_replay\logs\block_476_chunks\block_425_449.csv
+python embedded\window_replay\block_window_replay.py --port COM6 --start 450 --limit 26 --out embedded\window_replay\logs\block_476_chunks\block_450_475.csv
+```
+
+The released merged log is:
+
+```text
+embedded/paper_validation/raw_logs/esp32_window_block_476_full_chunked.csv
+```
 
 Expected paper result:
 
@@ -83,6 +106,18 @@ Run replay and compare:
 python embedded\window_replay\continuous_sample_replay.py --port COM6 --timeout 90 --out embedded\paper_validation\raw_logs\esp32_continuous_50_scaled.csv
 python embedded\window_replay\compare_continuous_replay.py --log embedded\paper_validation\raw_logs\esp32_continuous_50_scaled.csv --out embedded\paper_validation\raw_logs\esp32_continuous_50_scaled_summary.json
 ```
+
+The 50-window continuous replay used the exported stream file `embedded/window_replay/data/continuous_replay_samples.bin` during validation. That large derived binary is not included in this release.
+
+The three 26-window repeatability runs were captured as:
+
+```powershell
+python embedded\window_replay\continuous_sample_replay.py --port COM6 --out embedded\paper_validation\raw_logs\esp32_continuous_26_repeat1.csv
+python embedded\window_replay\continuous_sample_replay.py --port COM6 --out embedded\paper_validation\raw_logs\esp32_continuous_26_repeat2.csv
+python embedded\window_replay\continuous_sample_replay.py --port COM6 --out embedded\paper_validation\raw_logs\esp32_continuous_26_repeat3.csv
+```
+
+The 124-window candidate was exported during development but is not used as a paper claim and its large binary is not included in this release.
 
 Expected paper result:
 
@@ -112,3 +147,24 @@ Main outputs:
 
 This release intentionally excludes raw OpenNeuro data and large derived replay binaries. To regenerate replay binaries from scratch, use OpenNeuro `ds007262` v1.0.6 and the preprocessing/export pipeline used in the associated benchmark analysis.
 
+`embedded/generate_final_embedded_validation.py` is release-safe: it regenerates summary tables and plots from the logs and summaries included in this repository.
+
+## 5. Post-Hoc Grouped Trial/Block Sensitivity
+
+The frozen embedded parity target uses the original row-level within-participant split. A post-hoc grouped trial/block sensitivity result is included to document the expected effect of removing overlapping-window leakage:
+
+- `embedded/paper_validation/grouped_trial_sensitivity_summary.csv`
+- `embedded/paper_validation/grouped_trial_sensitivity_summary.json`
+
+This sensitivity check is an offline analysis result, not an ESP32 replay result. It should be cited only as a caveat/sensitivity result. The embedded validation target remains the frozen 476-row/window benchmark used for parity with the exported model.
+
+## 6. Release Checks
+
+Run lightweight consistency checks:
+
+```powershell
+python embedded\generate_final_embedded_validation.py
+python -m pytest -q
+```
+
+The GitHub Actions workflow `.github/workflows/release-checks.yml` runs the same summary regeneration and tests on push and pull request.

@@ -1,6 +1,6 @@
 {
-  "log_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\window_replay\\logs\\esp32_window_block_476_full_chunked.csv",
-  "reference_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\window_replay\\data\\window_replay_reference.csv",
+  "log_path": "embedded/paper_validation/raw_logs/esp32_window_block_476_full_chunked.csv",
+  "reference_path": "embedded/window_replay/data/window_replay_reference.csv (derived file not included)",
   "rows": 476,
   "missing_rows": [],
   "class_counts": {

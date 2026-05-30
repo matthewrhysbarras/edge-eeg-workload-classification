@@ -1,6 +1,6 @@
 {
   "name": "eeg_logreg_within_participant_feature_replay",
-  "source_results": "C:\\Users\\matth\\Documents\\Conference\\replication\\runs\\eeg_logreg_overlap_low_high\\reports\\ml_results_baseline_low_high_omit_hardest_target_eeg_logreg.json",
+  "source_results": "external/offline_benchmark/ml_results_baseline_low_high_omit_hardest_target_eeg_logreg.json",
   "scenario": "baseline_low_high_omit_hardest",
   "validation": "within-participant",
   "pipeline": "SimpleImputer(median) -> QuantileClipper(0.01,0.99) -> RobustScaler -> VarianceThreshold -> LogisticRegression",

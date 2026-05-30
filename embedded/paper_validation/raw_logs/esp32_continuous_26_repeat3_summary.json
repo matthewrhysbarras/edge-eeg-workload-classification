@@ -1,6 +1,6 @@
 {
-  "log_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\window_replay\\logs\\esp32_continuous_26_repeat3.csv",
-  "reference_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\window_replay\\data\\continuous_replay_reference.csv",
+  "log_path": "embedded/paper_validation/raw_logs/esp32_continuous_26_repeat3.csv",
+  "reference_path": "embedded/window_replay/data/continuous_replay_reference.csv (derived file not included)",
   "windows_processed": 26,
   "windows_expected": 26,
   "missing_windows": [],

@@ -1,5 +1,5 @@
 {
-  "log_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\model_export\\python_reference_predictions.csv",
+  "log_path": "embedded/model_export/python_reference_predictions.csv",
   "rows": 476,
   "missing_or_unknown_rows": [],
   "class_counts": {

@@ -59,9 +59,12 @@ python -m pip install -r requirements.txt
 - `embedded/window_replay/esp32_continuous_replay/`: continuous timed sample replay firmware.
 - `embedded/model_export/`: exported logistic-regression model, feature rows, class labels, preprocessing parameters and C/C++ header.
 - `embedded/paper_validation/`: paper-ready summary tables, plots and validation logs.
+- `ARTIFACTS.md`: claim-to-artifact map linking paper claims to released evidence.
 - `REPRODUCIBILITY.md`: exact commands used for the validation stages.
 - `LIMITATIONS.md`: scope and caveats.
 - `MANIFEST.md`: file-by-file release manifest.
+- `checksums_sha256.txt`: SHA-256 checksums for release files.
+- `.github/workflows/release-checks.yml` and `tests/`: lightweight checks that regenerate release summaries and verify key paper values.
 
 ## Citation
 
@@ -76,3 +79,9 @@ The original dataset is OpenNeuro `ds007262` version `1.0.6`:
 https://doi.org/10.18112/openneuro.ds007262.v1.0.6
 
 This release does not include the raw OpenNeuro dataset. It includes exported model artefacts and validation logs needed to support the embedded replay results. Large derived replay binaries are intentionally excluded and can be regenerated from the source dataset and preprocessing pipeline.
+
+The release is intended to support embedded-validation auditability rather than full raw-data-to-model regeneration. Full regeneration from raw data requires the external benchmark preprocessing pipeline used to create the replay inputs. The associated offline benchmark code is available separately at:
+
+https://github.com/LMBooth/Arithmetic_Workload_Estimation
+
+The embedded release uses repo-relative metadata for the exported model, logs and summaries; no private local filesystem paths are required for the released validation checks.

@@ -1,0 +1,15 @@
+{
+  "name": "post_hoc_grouped_trial_sensitivity",
+  "purpose": "Sensitivity check for the row-level overlapping-window split used by the frozen embedded parity target.",
+  "status": "post-hoc offline analysis; not used as the embedded parity target and not replayed on ESP32",
+  "scenario": "baseline_low_high_omit_hardest",
+  "validation": "within-participant grouped holdout by trial/block",
+  "splitter": "GroupShuffleSplit-style trial/block holdout within participant",
+  "random_seed": 42,
+  "model_note": "Used the same exported logistic-regression feature/classification pipeline family as the embedded parity analysis; included to quantify sensitivity to overlap leakage rather than to replace the frozen benchmark target.",
+  "mean_split_balanced_accuracy": 0.6034323700990367,
+  "mean_split_macro_f1": 0.5554336243018589,
+  "pooled_balanced_accuracy": 0.6062914760008716,
+  "pooled_macro_f1": 0.5877524521248033,
+  "interpretation": "The grouped-trial result is lower than the row-level benchmark, consistent with the acknowledged risk that overlapping row-level windows inflate the frozen benchmark metrics. The ESP32 validation demonstrates parity with the frozen benchmark implementation, not leakage-free generalization."
+}

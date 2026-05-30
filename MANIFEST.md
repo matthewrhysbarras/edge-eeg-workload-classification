@@ -9,11 +9,16 @@ This manifest lists the files included in the release package and their purpose.
 | `README.md` | Project overview, validation scope and repository guide. |
 | `REPRODUCIBILITY.md` | Commands for replay validation stages and figure/table generation. |
 | `LIMITATIONS.md` | Explicit scope limits and caveats. |
+| `ARTIFACTS.md` | Paper claim-to-artifact map. |
+| `CHECKSUMS.md` | Checksum documentation. |
+| `checksums_sha256.txt` | SHA-256 checksums for release files. |
 | `MANIFEST.md` | This file. |
 | `requirements.txt` | Python package assumptions. |
 | `.gitignore` | Excludes caches, builds, raw datasets and large replay binaries. |
+| `.github/workflows/release-checks.yml` | GitHub Actions release consistency checks. |
+| `tests/` | Lightweight pytest release checks. |
 | `LICENSE` | MIT software license. |
-| `CITATION.cff` | Citation metadata template for GitHub/Zenodo. |
+| `CITATION.cff` | Citation metadata for GitHub/Zenodo. |
 
 ## Firmware
 
@@ -31,7 +36,7 @@ This manifest lists the files included in the release package and their purpose.
 | `embedded/reference_inference.py` | No-scikit Python reference inference for exported feature rows. |
 | `embedded/serial_replay.py` | Host feature-vector serial replay client. |
 | `embedded/compare_esp32_log.py` | Compare ESP32 feature-vector logs with Python reference. |
-| `embedded/generate_final_embedded_validation.py` | Generate paper-ready summary tables and plots. |
+| `embedded/generate_final_embedded_validation.py` | Generate paper-ready summary tables and plots from released evidence. |
 | `embedded/window_replay/export_window_replay.py` | Export block-window replay data from preprocessed windows. |
 | `embedded/window_replay/block_window_replay.py` | Host block-window replay client. |
 | `embedded/window_replay/compare_block_window_replay.py` | Compare block-window ESP32 predictions with Python references. |
@@ -58,6 +63,8 @@ This manifest lists the files included in the release package and their purpose.
 | `embedded/paper_validation/embedded_stage_summary.csv` | Three-stage embedded validation summary table. |
 | `embedded/paper_validation/embedded_stage_summary.json` | JSON version of the stage summary. |
 | `embedded/paper_validation/block_window_476_confusion_matrix.csv` | Confusion matrix for the 476-window block replay. |
+| `embedded/paper_validation/grouped_trial_sensitivity_summary.csv` | Post-hoc grouped trial/block sensitivity summary. |
+| `embedded/paper_validation/grouped_trial_sensitivity_summary.json` | JSON version of the grouped sensitivity summary. |
 | `embedded/paper_validation/stage2_repeatability_summary.csv` | Continuous replay repeatability summary. |
 | `embedded/paper_validation/stage2_repeatability_summary.json` | JSON version of continuous repeatability summary. |
 | `embedded/paper_validation/stage2_repeatability_windows.csv` | Per-window timing data for repeatability runs. |
@@ -69,8 +76,12 @@ This manifest lists the files included in the release package and their purpose.
 
 | File | Purpose |
 |---|---|
+| `.github/workflows/release-checks.yml` | GitHub Actions workflow for release consistency checks. |
 | `.gitignore` | Git ignore rules for caches, builds and raw datasets. |
-| `CITATION.cff` | Citation metadata template. |
+| `ARTIFACTS.md` | Paper claim-to-artifact map. |
+| `CHECKSUMS.md` | Checksum documentation. |
+| `checksums_sha256.txt` | SHA-256 checksums for release files. |
+| `CITATION.cff` | Citation metadata. |
 | `embedded/compare_esp32_log.py` | Python export, replay, comparison or plotting script. |
 | `embedded/esp32_feature_replay/esp32_feature_replay.ino` | ESP32 firmware source. |
 | `embedded/esp32_feature_replay/model_data.h` | C/C++ exported model header for firmware. |
@@ -78,13 +89,15 @@ This manifest lists the files included in the release package and their purpose.
 | `embedded/export_logreg_for_esp32.py` | Python export, replay, comparison or plotting script. |
 | `embedded/generate_final_embedded_validation.py` | Python export, replay, comparison or plotting script. |
 | `embedded/model_export/logreg_replay_model.json` | Exported model package or reference summary. |
-| `embedded/model_export/logreg_replay_reference_predictions.csv` | Held-out feature rows or Python reference predictions. |
-| `embedded/model_export/logreg_replay_vectors.csv` | Held-out feature rows or Python reference predictions. |
+| `embedded/model_export/logreg_replay_reference_predictions.csv` | Held-out feature rows, predictions or exported model artefact. |
+| `embedded/model_export/logreg_replay_vectors.csv` | Held-out feature rows, predictions or exported model artefact. |
 | `embedded/model_export/model_data.h` | C/C++ exported model header for firmware. |
 | `embedded/model_export/python_reference_compare_summary.json` | Exported model package or reference summary. |
-| `embedded/paper_validation/block_window_476_confusion_matrix.csv` | Paper-validation table or confusion matrix. |
-| `embedded/paper_validation/embedded_stage_summary.csv` | Paper-validation table or confusion matrix. |
-| `embedded/paper_validation/embedded_stage_summary.json` | Paper-validation summary data. |
+| `embedded/paper_validation/block_window_476_confusion_matrix.csv` | Paper-validation summary table or metadata. |
+| `embedded/paper_validation/embedded_stage_summary.csv` | Paper-validation summary table or metadata. |
+| `embedded/paper_validation/embedded_stage_summary.json` | Paper-validation summary table or metadata. |
+| `embedded/paper_validation/grouped_trial_sensitivity_summary.csv` | Paper-validation summary table or metadata. |
+| `embedded/paper_validation/grouped_trial_sensitivity_summary.json` | Paper-validation summary table or metadata. |
 | `embedded/paper_validation/plots/block_window_476_confusion_matrix.png` | Paper-ready validation plot. |
 | `embedded/paper_validation/plots/embedded_prediction_agreement_summary.png` | Paper-ready validation plot. |
 | `embedded/paper_validation/plots/embedded_staged_validation_pipeline.png` | Paper-ready validation plot. |
@@ -103,10 +116,10 @@ This manifest lists the files included in the release package and their purpose.
 | `embedded/paper_validation/raw_logs/esp32_feature_vector_replay_full_summary.json` | Comparison summary for an ESP32 validation log. |
 | `embedded/paper_validation/raw_logs/esp32_window_block_476_full_chunked.csv` | Raw ESP32 validation log used as evidence. |
 | `embedded/paper_validation/raw_logs/esp32_window_block_476_full_chunked_summary.json` | Comparison summary for an ESP32 validation log. |
-| `embedded/paper_validation/stage2_confusion_matrix_50.csv` | Paper-validation table or confusion matrix. |
-| `embedded/paper_validation/stage2_repeatability_summary.csv` | Paper-validation table or confusion matrix. |
-| `embedded/paper_validation/stage2_repeatability_summary.json` | Paper-validation summary data. |
-| `embedded/paper_validation/stage2_repeatability_windows.csv` | Paper-validation table or confusion matrix. |
+| `embedded/paper_validation/stage2_confusion_matrix_50.csv` | Paper-validation summary table or metadata. |
+| `embedded/paper_validation/stage2_repeatability_summary.csv` | Paper-validation summary table or metadata. |
+| `embedded/paper_validation/stage2_repeatability_summary.json` | Paper-validation summary table or metadata. |
+| `embedded/paper_validation/stage2_repeatability_windows.csv` | Paper-validation summary table or metadata. |
 | `embedded/reference_inference.py` | Python export, replay, comparison or plotting script. |
 | `embedded/serial_replay.py` | Python export, replay, comparison or plotting script. |
 | `embedded/window_replay/block_window_replay.py` | Python export, replay, comparison or plotting script. |
@@ -129,3 +142,4 @@ This manifest lists the files included in the release package and their purpose.
 | `README.md` | Project overview and validation scope. |
 | `REPRODUCIBILITY.md` | Reproduction commands for validation stages. |
 | `requirements.txt` | Python dependency assumptions. |
+| `tests/test_release_summaries.py` | Pytest release consistency check. |

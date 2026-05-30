@@ -28,5 +28,6 @@
     "buffer_overruns": 0
   },
   "continuous_124_candidate_windows": 124,
-  "continuous_124_candidate_note": "A larger contiguous candidate was available, but the paper-grade continuous timing claim uses the clean 50-window replay with separate 26-window repeatability checks."
+  "continuous_124_candidate_note": "A larger contiguous candidate was exported during development, but the paper-grade continuous timing claim uses the clean 50-window replay with separate 26-window repeatability checks. The large derived binary is not included in this release.",
+  "note": "Release-only regeneration uses included ESP32 logs and summary JSON files. Raw OpenNeuro data and large replay binaries are intentionally excluded."
 }

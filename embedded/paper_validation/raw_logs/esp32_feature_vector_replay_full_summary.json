@@ -1,5 +1,5 @@
 {
-  "log_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\logs\\esp32_replay_full.csv",
+  "log_path": "embedded/paper_validation/raw_logs/esp32_feature_vector_replay_full.csv",
   "rows": 476,
   "missing_or_unknown_rows": [],
   "class_counts": {
