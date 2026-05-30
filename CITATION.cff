@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+title: Edge EEG Workload Classification
+message: If you use this software or validation artefacts, please cite the archived release and associated conference paper.
+type: software
+authors:
+  - family-names: Barras
+    given-names: Matthew
+  - family-names: Booth
+    given-names: Liam
+repository-code: https://github.com/matthewrhysbarras/edge-eeg-workload-classification
+date-released: 2026-05-30
+version: 1.0.0
+license: MIT
+abstract: Firmware, model export artefacts, replay scripts and validation evidence for ESP32 replay validation of an EEG workload-classification pipeline.

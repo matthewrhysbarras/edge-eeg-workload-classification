@@ -1,0 +1,8 @@
+numpy>=1.26,<2.0
+pandas>=2.3,<3.0
+scipy>=1.14,<2.0
+scikit-learn>=1.5,<2.0
+pyserial>=3.5,<4.0
+matplotlib>=3.9,<4.0
+python-docx>=1.2,<2.0
+

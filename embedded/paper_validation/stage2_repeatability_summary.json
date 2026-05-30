@@ -1,0 +1,32 @@
+{
+  "n_runs": 3,
+  "n_windows_per_run": 26,
+  "total_window_observations": 78,
+  "prediction_agreement_min": 1.0,
+  "prediction_mismatches_total": 0,
+  "malformed_packets_max": 0,
+  "dropped_sequences_max": 0,
+  "buffer_overruns_max": 0,
+  "feature_us_mean": 255142.7435897436,
+  "feature_us_std": 3497.946449271538,
+  "feature_us_max": 258703.0,
+  "classifier_us_mean": 412.44871794871796,
+  "classifier_us_std": 148.08286969476347,
+  "classifier_us_max": 815.0,
+  "total_us_mean": 255557.07692307694,
+  "total_us_std": 3415.355066134739,
+  "total_us_max": 259015.0,
+  "hop_budget_us": 1500000,
+  "max_total_fraction_of_hop": 0.17267666666666667,
+  "continuous_50_scaled_windows": 50,
+  "continuous_50_scaled_agreement": 1.0,
+  "continuous_50_scaled_balanced_accuracy": 0.6405228758169934,
+  "continuous_50_scaled_macro_f1": 0.6173238526179703,
+  "continuous_50_scaled_packet_errors": {
+    "malformed": 0,
+    "dropped_sequences": 0,
+    "buffer_overruns": 0
+  },
+  "continuous_124_candidate_windows": 124,
+  "continuous_124_candidate_note": "A larger contiguous candidate was available, but the paper-grade continuous timing claim uses the clean 50-window replay with separate 26-window repeatability checks."
+}

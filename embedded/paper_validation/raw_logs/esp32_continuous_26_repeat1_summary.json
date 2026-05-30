@@ -1,0 +1,22 @@
+{
+  "log_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\window_replay\\logs\\esp32_continuous_26_repeat1.csv",
+  "reference_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\window_replay\\data\\continuous_replay_reference.csv",
+  "windows_processed": 26,
+  "windows_expected": 26,
+  "missing_windows": [],
+  "prediction_agreement": 1.0,
+  "prediction_mismatches": 0,
+  "mismatch_examples": [],
+  "balanced_accuracy": 0.6277777777777778,
+  "macro_f1": 0.5771428571428572,
+  "mean_feature_us": 255139.8076923077,
+  "max_feature_us": 258632.0,
+  "mean_classifier_us": 411.5,
+  "max_classifier_us": 815.0,
+  "mean_total_us": 255553.61538461538,
+  "max_total_us": 258945.0,
+  "max_malformed_packets": 0,
+  "max_dropped_sequences": 0,
+  "max_buffer_overrun_count": 0,
+  "safe_below_1_5s_hop": true
+}

@@ -1,0 +1,18 @@
+{
+  "log_path": "C:\\Users\\matth\\Documents\\Conference\\embedded\\logs\\esp32_replay_full.csv",
+  "rows": 476,
+  "missing_or_unknown_rows": [],
+  "class_counts": {
+    "low_1_2_3": 213,
+    "high_4_5_6": 213,
+    "baseline": 50
+  },
+  "agreement_with_python_reference": 1.0,
+  "agreement_rows": 476,
+  "pooled_replay_balanced_accuracy": 0.7083255086071988,
+  "pooled_replay_macro_f1": 0.6975297450389076,
+  "mean_split_balanced_accuracy": 0.7114630467571644,
+  "mean_split_macro_f1": 0.7004330025688179,
+  "mean_inference_us_esp32": 328.9579831932773,
+  "max_inference_us_esp32": 841.0
+}

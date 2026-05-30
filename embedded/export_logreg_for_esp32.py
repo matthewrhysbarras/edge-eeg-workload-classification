@@ -1,0 +1,344 @@
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import math
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import RobustScaler
+from sklearn.feature_selection import VarianceThreshold
+
+
+ROOT = Path(__file__).resolve().parents[1]
+STAGE6_DIR = ROOT / "_reference_Arithmetic_Workload_Estimation" / "analysis_pipeline"
+if str(STAGE6_DIR) not in sys.path:
+    sys.path.insert(0, str(STAGE6_DIR))
+
+from stage6_train_classic_ml import (  # noqa: E402
+    QuantileClipper,
+    _metric_bundle,
+    _prepare_dataset,
+    _stable_seed_from_text,
+)
+
+
+DEFAULT_RESULTS = (
+    ROOT
+    / "replication"
+    / "runs"
+    / "eeg_logreg_overlap_low_high"
+    / "reports"
+    / "ml_results_baseline_low_high_omit_hardest_target_eeg_logreg.json"
+)
+DEFAULT_OUT = ROOT / "embedded" / "model_export"
+
+
+def _json_float(value: Any) -> float | None:
+    try:
+        out = float(value)
+    except (TypeError, ValueError):
+        return None
+    if math.isfinite(out):
+        return out
+    return None
+
+
+def _metric_summary(y_true: list[str], y_pred: list[str], labels: list[str]) -> dict[str, Any]:
+    return _metric_bundle(np.asarray(y_true), np.asarray(y_pred), labels=labels)
+
+
+def _participant_split_indices(payload: dict[str, Any], participant_id: str, test_size: float, seed: int) -> tuple[np.ndarray, np.ndarray]:
+    participants = payload["participants"]
+    y = payload["y"]
+    idx_all = np.where(participants == participant_id)[0]
+    y_participant = y[idx_all]
+    splitter = StratifiedShuffleSplit(n_splits=1, test_size=float(test_size), random_state=seed)
+    train_pos, test_pos = next(splitter.split(np.zeros(idx_all.size), y_participant))
+    return idx_all[train_pos], idx_all[test_pos]
+
+
+def _build_pipeline(c_value: float, lower_q: float, upper_q: float, random_seed: int) -> Pipeline:
+    return Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("clip", QuantileClipper(lower_q=lower_q, upper_q=upper_q)),
+            ("scale", RobustScaler(with_centering=True)),
+            ("var", VarianceThreshold(threshold=0.0)),
+            (
+                "model",
+                LogisticRegression(
+                    C=float(c_value),
+                    solver="lbfgs",
+                    max_iter=8000,
+                    tol=1e-3,
+                    class_weight="balanced",
+                    random_state=int(random_seed),
+                ),
+            ),
+        ]
+    )
+
+
+def _extract_model(pipe: Pipeline, model_index: int, evaluation: dict[str, Any]) -> dict[str, Any]:
+    imputer = pipe.named_steps["imputer"]
+    clip = pipe.named_steps["clip"]
+    scale = pipe.named_steps["scale"]
+    var = pipe.named_steps["var"]
+    model = pipe.named_steps["model"]
+    active_indices = [int(x) for x in var.get_support(indices=True).tolist()]
+    return {
+        "model_index": int(model_index),
+        "split_id": str(evaluation["split_id"]),
+        "participant_id": str(evaluation["participant_id"]),
+        "best_params": evaluation.get("best_params", {}),
+        "model_classes": [str(x) for x in model.classes_.tolist()],
+        "imputer_median": [_json_float(x) for x in imputer.statistics_.tolist()],
+        "clip_lower": [_json_float(x) for x in clip.lower_bounds_.tolist()],
+        "clip_upper": [_json_float(x) for x in clip.upper_bounds_.tolist()],
+        "scaler_center": [_json_float(x) for x in scale.center_.tolist()],
+        "scaler_scale": [_json_float(x) for x in scale.scale_.tolist()],
+        "active_feature_indices": active_indices,
+        "coef": [[float(v) for v in row] for row in model.coef_.tolist()],
+        "intercept": [float(v) for v in model.intercept_.tolist()],
+    }
+
+
+def _format_float(value: float | None) -> str:
+    if value is None or not math.isfinite(float(value)):
+        return "NAN"
+    return f"{float(value):.9g}"
+
+
+def _cpp_array_1d(values: list[Any], indent: str = "  ") -> str:
+    return indent + ", ".join(_format_float(v) for v in values)
+
+
+def _write_model_header(model_package: dict[str, Any], path: Path) -> None:
+    models = model_package["models"]
+    n_models = len(models)
+    n_features = len(model_package["feature_names"])
+    n_classes = len(models[0]["model_classes"])
+    max_active = max(len(m["active_feature_indices"]) for m in models)
+
+    def matrix(name: str, key: str) -> list[str]:
+        lines = [f"static const float {name}[N_MODELS][N_FEATURES] = {{"]
+        for model in models:
+            lines.append("  {")
+            lines.append(_cpp_array_1d(model[key], indent="    "))
+            lines.append("  },")
+        lines.append("};")
+        return lines
+
+    lines: list[str] = [
+        "#pragma once",
+        "",
+        "// Generated by embedded/export_logreg_for_esp32.py. Do not edit by hand.",
+        f"static const int N_MODELS = {n_models};",
+        f"static const int N_FEATURES = {n_features};",
+        f"static const int N_CLASSES = {n_classes};",
+        f"static const int MAX_ACTIVE_FEATURES = {max_active};",
+        "",
+        "static const char* CLASS_LABELS[N_CLASSES] = {"
+        + ", ".join(json.dumps(x) for x in models[0]["model_classes"])
+        + "};",
+        "static const char* MODEL_PARTICIPANTS[N_MODELS] = {"
+        + ", ".join(json.dumps(m["participant_id"]) for m in models)
+        + "};",
+        "",
+        "static const int ACTIVE_COUNTS[N_MODELS] = {"
+        + ", ".join(str(len(m["active_feature_indices"])) for m in models)
+        + "};",
+        "static const int ACTIVE_INDICES[N_MODELS][MAX_ACTIVE_FEATURES] = {",
+    ]
+    for model in models:
+        padded = model["active_feature_indices"] + [-1] * (max_active - len(model["active_feature_indices"]))
+        lines.append("  {" + ", ".join(str(int(x)) for x in padded) + "},")
+    lines.append("};")
+    lines.append("")
+    for name, key in [
+        ("IMPUTER_MEDIAN", "imputer_median"),
+        ("CLIP_LOWER", "clip_lower"),
+        ("CLIP_UPPER", "clip_upper"),
+        ("SCALER_CENTER", "scaler_center"),
+        ("SCALER_SCALE", "scaler_scale"),
+    ]:
+        lines.extend(matrix(name, key))
+        lines.append("")
+
+    lines.append("static const float COEF[N_MODELS][N_CLASSES][MAX_ACTIVE_FEATURES] = {")
+    for model in models:
+        lines.append("  {")
+        for row in model["coef"]:
+            padded = row + [0.0] * (max_active - len(row))
+            lines.append("    {" + ", ".join(_format_float(v) for v in padded) + "},")
+        lines.append("  },")
+    lines.append("};")
+    lines.append("")
+
+    lines.append("static const float INTERCEPT[N_MODELS][N_CLASSES] = {")
+    for model in models:
+        lines.append("  {" + ", ".join(_format_float(v) for v in model["intercept"]) + "},")
+    lines.append("};")
+    lines.append("")
+
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def export(results_path: Path, out_dir: Path) -> dict[str, Any]:
+    results = json.loads(results_path.read_text(encoding="utf-8"))
+    config = results["config"]
+    aggregate = results["aggregates"][0]
+    class_scenario = config["class_scenario"]
+    labels = [str(x) for x in class_scenario["final_labels"]]
+    dataset_path = Path(results["dataset_stats"][0]["path"])
+    payload = _prepare_dataset(
+        dataset_name="eeg",
+        dataset_path=dataset_path,
+        target_col=str(config["target_column"]),
+        labels=labels,
+        class_scenario=class_scenario,
+    )
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    models: list[dict[str, Any]] = []
+    vector_rows: list[dict[str, Any]] = []
+    reference_rows: list[dict[str, Any]] = []
+    all_true: list[str] = []
+    all_pred: list[str] = []
+
+    X = payload["X"]
+    y = payload["y"]
+    df = payload["df"]
+    feature_names = [str(x) for x in payload["feature_columns"]]
+
+    for model_index, evaluation in enumerate(results["evaluations"]):
+        participant_id = str(evaluation["participant_id"])
+        seed = _stable_seed_from_text(participant_id, int(config["random_seed"]))
+        train_idx, test_idx = _participant_split_indices(
+            payload=payload,
+            participant_id=participant_id,
+            test_size=float(config["within_participant_test_size"]),
+            seed=seed,
+        )
+        c_value = float(evaluation["best_model_params"]["C"])
+        pipe = _build_pipeline(
+            c_value=c_value,
+            lower_q=float(config["clip_lower_quantile"]),
+            upper_q=float(config["clip_upper_quantile"]),
+            random_seed=int(config["random_seed"]),
+        )
+        pipe.fit(X[train_idx], y[train_idx])
+        y_pred = [str(x) for x in pipe.predict(X[test_idx]).tolist()]
+        y_true = [str(x) for x in y[test_idx].tolist()]
+        metrics = _metric_summary(y_true, y_pred, labels)
+        expected = evaluation["metrics"]
+        if abs(metrics["balanced_accuracy"] - float(expected["balanced_accuracy"])) > 1e-12:
+            raise RuntimeError(f"Metric mismatch for {evaluation['split_id']}: reconstructed {metrics} expected {expected}")
+
+        models.append(_extract_model(pipe, model_index, evaluation))
+        all_true.extend(y_true)
+        all_pred.extend(y_pred)
+
+        for local_i, dataset_row_index in enumerate(test_idx.tolist()):
+            row = df.iloc[int(dataset_row_index)]
+            replay_row: dict[str, Any] = {
+                "replay_row_index": len(vector_rows),
+                "dataset_row_index": int(dataset_row_index),
+                "model_index": int(model_index),
+                "split_id": str(evaluation["split_id"]),
+                "participant_id": participant_id,
+                "ml_row_id": str(row.get("ml_row_id", "")),
+                "true_label": y_true[local_i],
+            }
+            for name, value in zip(feature_names, X[int(dataset_row_index)].tolist()):
+                replay_row[name] = "" if not math.isfinite(float(value)) else f"{float(value):.17g}"
+            vector_rows.append(replay_row)
+
+            reference_rows.append(
+                {
+                    "replay_row_index": len(reference_rows),
+                    "dataset_row_index": int(dataset_row_index),
+                    "model_index": int(model_index),
+                    "split_id": str(evaluation["split_id"]),
+                    "participant_id": participant_id,
+                    "true_label": y_true[local_i],
+                    "pred_label": y_pred[local_i],
+                }
+            )
+
+    replay_metrics = _metric_summary(all_true, all_pred, labels)
+    model_package = {
+        "name": "eeg_logreg_within_participant_feature_replay",
+        "source_results": str(results_path),
+        "scenario": class_scenario["name"],
+        "validation": "within-participant",
+        "pipeline": "SimpleImputer(median) -> QuantileClipper(0.01,0.99) -> RobustScaler -> VarianceThreshold -> LogisticRegression",
+        "segmentation": "3 s windows with 1.5 s overlap",
+        "metric_labels": labels,
+        "feature_names": feature_names,
+        "n_features": len(feature_names),
+        "n_models": len(models),
+        "models": models,
+    }
+
+    model_json = out_dir / "logreg_replay_model.json"
+    vectors_csv = out_dir / "logreg_replay_vectors.csv"
+    reference_csv = out_dir / "logreg_replay_reference_predictions.csv"
+    header = out_dir / "model_data.h"
+    sketch_header = ROOT / "embedded" / "esp32_feature_replay" / "model_data.h"
+    summary_json = out_dir / "export_summary.json"
+
+    model_json.write_text(json.dumps(model_package, indent=2), encoding="utf-8")
+    with vectors_csv.open("w", newline="", encoding="utf-8") as f:
+        fieldnames = list(vector_rows[0].keys())
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(vector_rows)
+    with reference_csv.open("w", newline="", encoding="utf-8") as f:
+        fieldnames = list(reference_rows[0].keys())
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(reference_rows)
+    _write_model_header(model_package, header)
+    _write_model_header(model_package, sketch_header)
+
+    summary = {
+        "model_json": str(model_json),
+        "vectors_csv": str(vectors_csv),
+        "reference_predictions_csv": str(reference_csv),
+        "model_header": str(header),
+        "sketch_model_header": str(sketch_header),
+        "n_replay_rows": len(vector_rows),
+        "n_models": len(models),
+        "n_features": len(feature_names),
+        "class_counts_replay": dict(Counter(all_true)),
+        "balanced_accuracy": replay_metrics["balanced_accuracy"],
+        "macro_f1": replay_metrics["macro_f1"],
+        "aggregate_balanced_accuracy_mean": aggregate["balanced_accuracy_mean"],
+        "aggregate_macro_f1_mean": aggregate["macro_f1_mean"],
+        "note": "Replay rows are the held-out rows from the 13 within-participant evaluations.",
+    }
+    summary_json.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    return summary
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Export the replicated EEG logistic regression models for ESP32 replay.")
+    parser.add_argument("--results", type=Path, default=DEFAULT_RESULTS)
+    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
+    args = parser.parse_args()
+    summary = export(args.results.resolve(), args.out_dir.resolve())
+    print(json.dumps(summary, indent=2))
+
+
+if __name__ == "__main__":
+    main()
