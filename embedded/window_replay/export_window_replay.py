@@ -199,8 +199,12 @@ def export(out_dir: Path, limit: int | None, include_all: bool) -> dict[str, obj
     }
     meta_json.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
-    sketch_dir = ROOT / "embedded" / "window_replay" / "esp32_window_replay"
-    shutil.copy2(ROOT / "embedded" / "model_export" / "model_data.h", sketch_dir / "model_data.h")
+    # Keep the firmware header in sync with the release/full block-window firmware.
+    # The older esp32_window_replay folder was used for the 26-window diagnostic build.
+    for sketch_name in ("esp32_window_replay_full", "esp32_window_replay"):
+        sketch_dir = ROOT / "embedded" / "window_replay" / sketch_name
+        if sketch_dir.exists():
+            shutil.copy2(ROOT / "embedded" / "model_export" / "model_data.h", sketch_dir / "model_data.h")
     return summary
 
 
