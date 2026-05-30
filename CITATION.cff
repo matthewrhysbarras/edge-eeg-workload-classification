@@ -8,6 +8,7 @@ authors:
   - family-names: Booth
     given-names: Liam
 repository-code: https://github.com/matthewrhysbarras/edge-eeg-workload-classification
+doi: 10.5281/zenodo.20452989
 date-released: 2026-05-30
 version: 1.0.0
 license: MIT

@@ -1,5 +1,7 @@
 # Edge EEG Workload Classification
 
+[![DOI](https://zenodo.org/badge/1253915064.svg)](https://doi.org/10.5281/zenodo.20452989)
+
 This repository contains the embedded validation artefacts for the conference paper **Edge EEG Workload Classification**.
 
 The project validates whether a selected EEG workload-classification pipeline can run on ESP32-class hardware using replayed data. The source model is an EEG-only logistic-regression pipeline selected from an offline benchmark of OpenNeuro `ds007262`.
@@ -61,6 +63,12 @@ python -m pip install -r requirements.txt
 - `LIMITATIONS.md`: scope and caveats.
 - `MANIFEST.md`: file-by-file release manifest.
 
+## Citation
+
+Archived release DOI:
+
+https://doi.org/10.5281/zenodo.20452989
+
 ## Data
 
 The original dataset is OpenNeuro `ds007262` version `1.0.6`:
@@ -68,4 +76,3 @@ The original dataset is OpenNeuro `ds007262` version `1.0.6`:
 https://doi.org/10.18112/openneuro.ds007262.v1.0.6
 
 This release does not include the raw OpenNeuro dataset. It includes exported model artefacts and validation logs needed to support the embedded replay results. Large derived replay binaries are intentionally excluded and can be regenerated from the source dataset and preprocessing pipeline.
-
